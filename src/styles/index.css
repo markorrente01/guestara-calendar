@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Brand */
+  --color-brand-primary: #1a1f36;
+  --color-brand-accent:  #e8572a;
+
+  /*  Backgrounds */
+  --color-bg-app:     #f4f3ef;
+  --color-bg-surface: #ffffff;
+  --color-bg-panel:   #fafaf8;
+
+  /* Heatmap scale */
+  --color-heat-0:    #F9FAFB;
+  --color-heat-low:  #DBEAFE;
+  --color-heat-mid:  #FDE68A;
+  --color-heat-high: #FB923C;
+  --color-heat-full: #B91C1C;
+
+  /* Typography */
+  --color-text-primary:   #1a1f36;
+  --color-text-secondary: #4a5568;
+  --color-text-muted:     #9aa0b0;
+
+  /* Borders */
+  --color-border-default: #e8e6df;
+  --color-border-strong:  #c9c5bc;
+
+  /* Status badges  */
+  --color-status-confirmed:   #2563eb;
+  --color-status-checked-in:  #16a34a;
+  --color-status-checked-out: #9333ea;
+  --color-status-cancelled:   #dc2626;
+
+  /* Fonts */
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--color-bg-app);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    transition: colors 300ms;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility calendar-p {
+  @apply px-6 max-w-6xl mx-auto;
+}
