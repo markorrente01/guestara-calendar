@@ -1,0 +1,1 @@
+export type { MonthStats, RoomType } from "@/features/calendar/types"
