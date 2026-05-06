@@ -19,19 +19,14 @@ function StatTile({ icon, label, value, index }: StatTileProps) {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.06 }}
-      className="flex items-center gap-3 px-5 py-4 rounded-2xl border"
-      style={{
-        backgroundColor: "var(--color-bg-surface)",
-        borderColor:     "var(--color-border-default)",
-      }}
+      className="flex items-center gap-3 px-5 py-4 rounded-2xl border bg-bg-surface border-border-default"
     >
-      <span style={{ color: "var(--color-brand-accent)" }}>{icon}</span>
+      <span className="text-brand-accent">{icon}</span>
       <div>
-        <p className="text-xs font-500" style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-xs font-500 text-text-muted">
           {label}
         </p>
-        <p className="text-base font-700 leading-tight mt-0.5"
-           style={{ color: "var(--color-text-primary)" }}>
+        <p className="text-base font-700 leading-tight mt-0.5 text-text-primary">
           {value}
         </p>
       </div>

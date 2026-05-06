@@ -1,69 +1,38 @@
-// import { useMemo } from "react"
-// import type { Booking, MonthStats, RoomType } from "@/features/calendar/types"
-// import { calcNights, isBookingActiveOnNight, buildCalendarGrid } from "@/utils/dateUtils"
-// import { TOTAL_ROOMS, ROOM_TYPES } from "@/constants/rooms"
-
-// export function useStats(
-//   bookings: Booking[],
-//   year: number,
-//   month: number
-// ): MonthStats {
-//   return useMemo(() => {
-//     const activeBookings = bookings.filter((b) => b.status !== "cancelled")
-
-//     // Total revenue — bookings that overlap this month
-//     const daysInMonth = new Date(year, month + 1, 0).getDate()
-//     const monthStart  = new Date(year, month, 1)
-//     const monthEnd    = new Date(year, month, daysInMonth)
-
-//     const totalRevenue = activeBookings
-//       .filter((b) => b.checkIn <= toKey(monthEnd) && b.checkOut > toKey(monthStart))
-//       .reduce((sum, b) => sum + b.totalAmount, 0)
-
-//     // Average occupancy across the month
-//     const grid = buildCalendarGrid(year, month)
-//     const allDates = grid.flat().filter((d) => d.getMonth() === month)
-//     const totalOccupied = allDates.reduce((sum, date) => {
-//       const count = activeBookings.filter((b) => isBookingActiveOnNight(b, date)).length
-//       return sum + count
-//     }, 0)
-//     const averageOccupancy = Math.round(
-//       (totalOccupied / (daysInMonth * TOTAL_ROOMS)) * 100
-//     )
-
-//     // Longest stay among active bookings in range
-//     const longestStay = activeBookings.reduce((max, b) => {
-//       const nights = calcNights(b.checkIn, b.checkOut)
-//       return nights > max ? nights : max
-//     }, 0)
-
-//     // Most booked room type by booking count
-//     const typeCounts = ROOM_TYPES.reduce<Record<RoomType, number>>(
-//       (acc, t) => ({ ...acc, [t]: 0 }),
-//       {} as Record<RoomType, number>
-//     )
-//     for (const b of activeBookings) {
-//       typeCounts[b.roomType] = (typeCounts[b.roomType] ?? 0) + 1
-//     }
-//     const mostBookedRoomType = (
-//       Object.entries(typeCounts) as [RoomType, number][]
-//     ).reduce((best, curr) => (curr[1] > best[1] ? curr : best))[0]
-
-//     return { totalRevenue, averageOccupancy, longestStay, mostBookedRoomType }
-//   }, [bookings, year, month])
-// }
-
-// function toKey(date: Date): string {
-//   const y = date.getFullYear()
-//   const m = String(date.getMonth() + 1).padStart(2, "0")
-//   const d = String(date.getDate()).padStart(2, "0")
-//   return `${y}-${m}-${d}`
-// }
-
 import { useMemo } from "react"
 import type { Booking, MonthStats, RoomType } from "@/features/calendar/types"
-import { calcNights, isBookingActiveOnNight, buildCalendarGrid, toDateKey } from "@/utils/dateUtils"
+import { calcNights, isBookingActiveOnNight, buildCalendarGrid, toDateKey, parseLocalDate } from "@/utils/dateUtils"
 import { TOTAL_ROOMS, ROOM_TYPES } from "@/constants/rooms"
+
+function getProratedRevenue(
+  booking: Booking,
+  year: number,
+  month: number
+): number {
+  const totalNights = calcNights(booking.checkIn, booking.checkOut)
+  if (totalNights === 0) return 0
+
+  const monthStart    = new Date(year, month, 1)
+  const monthEnd      = new Date(year, month + 1, 0)  // last day of month
+  const checkIn       = parseLocalDate(booking.checkIn)
+  const checkOut      = parseLocalDate(booking.checkOut)
+
+  // Clamp booking window to this month
+  const windowStart   = checkIn  > monthStart ? checkIn  : monthStart
+  const windowEnd     = checkOut < monthEnd   ? checkOut : new Date(year, month + 1, 0 + 1)
+
+  // Count nights in this month (checkIn inclusive, checkOut exclusive)
+  let nightsInMonth = 0
+  const cursor = new Date(windowStart)
+  while (cursor < windowEnd && cursor.getMonth() === month) {
+    const key = toDateKey(cursor)
+    if (key >= booking.checkIn && key < booking.checkOut) {
+      nightsInMonth++
+    }
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return Math.round((nightsInMonth / totalNights) * booking.totalAmount)
+}
 
 export function useStats(
   bookings: Booking[],
@@ -73,16 +42,20 @@ export function useStats(
   return useMemo(() => {
     const activeBookings = bookings.filter((b) => b.status !== "cancelled")
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const monthStartKey = `${year}-${String(month + 1).padStart(2, "0")}-01`
+    const daysInMonth   = new Date(year, month + 1, 0).getDate()
+    const monthStartKey = toDateKey(new Date(year, month, 1))
     const monthEndKey   = toDateKey(new Date(year, month, daysInMonth))
 
-    // on the night of arrival, not spread across overlap months.
-    const monthRevenue = activeBookings
-      .filter((b) => b.checkIn >= monthStartKey && b.checkIn <= monthEndKey)
-      .reduce((sum, b) => sum + b.totalAmount, 0)
+    // ── Revenue: prorated to only nights in this month ───────────────────
+    const monthBookings = activeBookings.filter(
+      (b) => b.checkIn <= monthEndKey && b.checkOut > monthStartKey
+    )
+    const totalRevenue = monthBookings.reduce(
+      (sum, b) => sum + getProratedRevenue(b, year, month),
+      0
+    )
 
-    // Avg occupancy: only current month days, correct denominator
+    // ── Avg occupancy ────────────────────────────────────────────────────
     const grid = buildCalendarGrid(year, month)
     const monthDates = grid.flat().filter((d) => d.getMonth() === month)
     const totalOccupied = monthDates.reduce((sum, date) => {
@@ -93,16 +66,13 @@ export function useStats(
       (totalOccupied / (daysInMonth * TOTAL_ROOMS)) * 100
     )
 
-    // longest stay among bookings overlapping this month
-    const monthBookings = activeBookings.filter(
-      (b) => b.checkIn <= monthEndKey && b.checkOut > monthStartKey
-    )
+    // ── Longest stay among bookings overlapping this month ───────────────
     const longestStay = monthBookings.reduce((max, b) => {
       const nights = calcNights(b.checkIn, b.checkOut)
       return nights > max ? nights : max
     }, 0)
 
-    // most booked room type scoped to this month
+    // ── Most booked room type scoped to this month ───────────────────────
     const typeCounts = ROOM_TYPES.reduce<Record<RoomType, number>>(
       (acc, t) => ({ ...acc, [t]: 0 }),
       {} as Record<RoomType, number>
@@ -114,11 +84,6 @@ export function useStats(
       Object.entries(typeCounts) as [RoomType, number][]
     ).reduce((best, curr) => (curr[1] > best[1] ? curr : best))[0]
 
-    return {
-      totalRevenue: monthRevenue,
-      averageOccupancy,
-      longestStay,
-      mostBookedRoomType,
-    }
+    return { totalRevenue, averageOccupancy, longestStay, mostBookedRoomType }
   }, [bookings, year, month])
 }
