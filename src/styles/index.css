@@ -11,13 +11,6 @@
   --color-bg-surface: #ffffff;
   --color-bg-panel:   #fafaf8;
 
-  /* Heatmap scale */
-  --color-heat-0:    #F9FAFB;
-  --color-heat-low:  #DBEAFE;
-  --color-heat-mid:  #FDE68A;
-  --color-heat-high: #FB923C;
-  --color-heat-full: #B91C1C;
-
   /* Typography */
   --color-text-primary:   #1a1f36;
   --color-text-secondary: #4a5568;
@@ -33,7 +26,6 @@
   --color-status-checked-out: #9333ea;
   --color-status-cancelled:   #dc2626;
 
-  /* Fonts */
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
