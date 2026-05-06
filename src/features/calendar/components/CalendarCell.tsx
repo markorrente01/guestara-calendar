@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { Booking } from "../types"
 import { getHeatmapColor, getHeatmapTextColor } from "@/utils/occupancyUtils"
-import { isBookingActiveOnNight, toDateKey } from "@/utils/dateUtils"
+import { isBookingActiveOnNight } from "@/utils/dateUtils"
 import { DayTooltip } from "./DayTooltip"
 
 interface CalendarCellProps {
@@ -32,7 +32,7 @@ export function CalendarCell({
     <>
       <div
         className="relative flex flex-col p-2 rounded-lg cursor-pointer select-none
-                   border transition-all duration-150 min-h-[72px]"
+                   border transition-all duration-150 min-h-18"
         style={{
           backgroundColor: bgColor,
           color:           textColor,

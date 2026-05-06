@@ -1,7 +1,4 @@
-/**
- * Returns a heatmap background color based on number of rooms occupied.
- * Total rooms = 10.
- */
+// returns heatmap bg based on number of rooms occupied
 export function getHeatmapColor(occupied: number): string {
   if (occupied === 0)  return "#F9FAFB"
   if (occupied <= 2)   return "#DBEAFE"
@@ -12,10 +9,7 @@ export function getHeatmapColor(occupied: number): string {
   return "#B91C1C" // 10
 }
 
-/**
- * Returns a contrasting text color for a given occupancy level.
- * Keeps day numbers readable against the heatmap background.
- */
+/* Returns a contrasting text color for a given occupancy level. */
 export function getHeatmapTextColor(occupied: number): string {
   return occupied >= 7 ? "#ffffff" : "#1a1f36"
 }

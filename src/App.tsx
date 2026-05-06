@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -22,35 +22,31 @@ function App() {
 function Dashboard() {
   const { year, month, goToPrev, goToNext, goToToday } = useCalendar()
   const { filters, toggleRoomType, toggleSource, toggleStatus, clearFilters } = useFilters()
-  const { bookings, occupancyMap, isLoading, isError } = useOccupancy(year, month, filters)
+  const { bookings, occupancyMap, bookingsByDate, isLoading, isError } = useOccupancy(year, month, filters)
   const { dragState, selectedRange, onCellMouseDown, onCellMouseEnter, clearSelection } = useDragSelect()
   const { panelBookings } = useBookingPanel(bookings, selectedRange)
   const stats = useStats(bookings, year, month)
 
-  const grid = buildCalendarGrid(year, month)
+  const grid = useMemo(() => buildCalendarGrid(year, month), [year, month])
 
-  // ── Loading state ───────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4"
-           style={{ backgroundColor: "var(--color-bg-app)" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-bg-app">
         <Spinner size={36} />
-        <p className="text-sm font-500" style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-sm font-500 text-text-muted">
           Loading bookings…
         </p>
       </div>
     )
   }
 
-  // ── Error state ─────────────────────────────────────────
   if (isError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3"
-           style={{ backgroundColor: "var(--color-bg-app)" }}>
-        <p className="text-lg font-600" style={{ color: "var(--color-text-primary)" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-bg-app">
+        <p className="text-lg font-600 text-text-primary">
           Failed to load bookings
         </p>
-        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-sm text-text-muted">
           Make sure bookings.json is in the /public folder and the dev server is running.
         </p>
       </div>
@@ -59,49 +55,32 @@ function Dashboard() {
 
   return (
     <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--color-bg-app)" }}
-      // Prevent text selection during drag
+      className="min-h-screen bg-bg-app"
       onMouseDown={(e) => { if (e.detail > 1) e.preventDefault() }}
     >
-      {/* ── Top bar ── */}
       <header
-        className="border-b px-6 py-3 flex items-center justify-between"
-        style={{
-          backgroundColor: "var(--color-bg-surface)",
-          borderColor:     "var(--color-border-default)",
-        }}
+        className="border-b px-6 py-3 flex items-center justify-between bg-bg-surface border-border-default"
       >
         <div className="flex items-center gap-2">
           <span
-            className="text-lg font-700 tracking-tight"
-            style={{ color: "var(--color-brand-primary)" }}
+            className="text-lg font-700 tracking-tight text-brand-primary"
           >
             Guestara
           </span>
           <span
-            className="text-xs font-500 px-2 py-0.5 rounded-full border"
-            style={{
-              color:           "var(--color-text-muted)",
-              borderColor:     "var(--color-border-default)",
-              backgroundColor: "var(--color-bg-panel)",
-            }}
+            className="text-xs font-500 px-2 py-0.5 rounded-full border text-text-muted border-border-default bg-bg-panel"
           >
             Front Desk
           </span>
         </div>
-        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-xs text-text-muted">
           {bookings.length} active bookings
         </p>
       </header>
 
-      {/* ── Main layout ── */}
       <main className="calendar-p py-6">
-
-        {/* Stats strip */}
         <StatsStrip stats={stats} />
 
-        {/* Filter bar */}
         <FilterBar
           filters={filters}
           onToggleRoom={toggleRoomType}
@@ -110,10 +89,7 @@ function Dashboard() {
           onClear={clearFilters}
         />
 
-        {/* Calendar + Panel side-by-side */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
-
-          {/* Left — calendar */}
           <div>
             <CalendarHeader
               year={year}
@@ -133,7 +109,7 @@ function Dashboard() {
                 <CalendarGrid
                   grid={grid}
                   occupancyMap={occupancyMap}
-                  bookings={bookings}
+                  bookingsByDate={bookingsByDate}
                   selectedRange={selectedRange}
                   dragState={dragState}
                   currentMonth={month}
@@ -143,9 +119,8 @@ function Dashboard() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Heatmap legend */}
             <div className="flex items-center gap-2 mt-3 justify-end">
-              <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+              <span className="text-xs text-text-muted">
                 Occupancy
               </span>
               {[
@@ -171,7 +146,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Right — booking panel */}
           <div className="lg:sticky lg:top-6">
             <BookingPanel
               bookings={panelBookings}

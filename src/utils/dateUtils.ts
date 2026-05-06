@@ -1,9 +1,5 @@
 import type { Booking, DateRange } from "@/features/calendar/types"
 
-/**
- * Returns "YYYY-MM-DD" key for a Date object.
- * Used as the key in OccupancyMap.
- */
 export function toDateKey(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, "0")
@@ -11,24 +7,16 @@ export function toDateKey(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
-/**
- * Parses a "YYYY-MM-DD" string into a local Date (midnight).
- * Never use `new Date(str)` directly — it parses as UTC and shifts on local TZ.
- */
+// converts back to js date object
 export function parseLocalDate(str: string): Date {
   const [y, m, d] = str.split("-").map(Number)
   return new Date(y, m - 1, d)
 }
 
-/**
- * Returns true if a booking occupies the given night.
- * checkIn is INCLUSIVE, checkOut is EXCLUSIVE.
- * Cancelled bookings are never active.
- */
 export function isBookingActiveOnNight(booking: Booking, date: Date): boolean {
   if (booking.status === "cancelled") return false
   const night = toDateKey(date)
-  return night >= booking.checkIn && night < booking.checkOut
+  return night >= booking.checkIn && night < booking.checkOut // if conditions are met return true
 }
 
 /**
@@ -44,13 +32,11 @@ export function bookingOverlapsRange(
   if (booking.status === "cancelled") return false
   const rangeStart = toDateKey(start)
   const rangeEnd   = toDateKey(end)
-  // booking.checkIn < rangeEnd (exclusive end doesn't matter here — end is inclusive night)
-  // booking.checkOut > rangeStart (checkout exclusive means guest was there night before)
   return booking.checkIn <= rangeEnd && booking.checkOut > rangeStart
 }
 
 /**
- * Builds a 2D array (weeks × days) of Date objects for the calendar grid.
+ * 2D array (weeks × days) of Date objects for the calendar grid.
  * Always Monday–Sunday. Pads with prev/next month days to fill the rectangle.
  */
 export function buildCalendarGrid(year: number, month: number): Date[][] {

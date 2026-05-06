@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { Booking, DateRange } from "../types"
 import { BookingCard } from "./BookingCard"
 import { EmptyState } from "./EmptyState"
-import { formatDate } from "@/utils/dateUtils"
+import { formatDate, toDateKey } from "@/utils/dateUtils"
 import { X } from "lucide-react"
 
 interface BookingPanelProps {
@@ -27,7 +27,6 @@ export function BookingPanel({ bookings, selectedRange, onClear }: BookingPanelP
         minHeight:       480,
       }}
     >
-      {/* Panel header */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b"
         style={{ borderColor: "var(--color-border-default)" }}
@@ -51,7 +50,6 @@ export function BookingPanel({ bookings, selectedRange, onClear }: BookingPanelP
         )}
       </div>
 
-      {/* Panel body */}
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         <AnimatePresence mode="wait">
           {bookings.length === 0 ? (
@@ -88,12 +86,4 @@ export function BookingPanel({ bookings, selectedRange, onClear }: BookingPanelP
       </div>
     </aside>
   )
-}
-
-// inline helper — avoids importing toDateKey separately just for the label
-function toDateKey(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, "0")
-  const d = String(date.getDate()).padStart(2, "0")
-  return `${y}-${m}-${d}`
 }

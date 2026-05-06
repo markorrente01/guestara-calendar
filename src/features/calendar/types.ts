@@ -8,7 +8,7 @@ export interface Booking {
   roomNumber:   string
   roomType:     RoomType
   checkIn:      string   // "YYYY-MM-DD"
-  checkOut:     string   // "YYYY-MM-DD"
+  checkOut:     string
   guests:       number
   totalAmount:  number
   currency:     string
@@ -22,7 +22,7 @@ export interface DateRange {
 }
 
 export interface OccupancyMap {
-  [dateKey: string]: number  // "2026-02-10" → 7
+  [dateKey: string]: number
 }
 
 export interface MonthStats {
