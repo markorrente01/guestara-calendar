@@ -1,5 +1,5 @@
 import type { Booking, DateRange } from "./types"
-import { bookingOverlapsRange, calcNights, parseLocalDate } from "@/utils/dateUtils"
+import { bookingOverlapsRange, calcNights } from "@/utils/dateUtils"
 
 /**
  * Returns all bookings that overlap a given date range.

@@ -46,7 +46,7 @@ export function useStats(
     const monthStartKey = toDateKey(new Date(year, month, 1))
     const monthEndKey   = toDateKey(new Date(year, month, daysInMonth))
 
-    // ── Revenue: prorated to only nights in this month ───────────────────
+    // ── Revenue: prorated to only nights in this month
     const monthBookings = activeBookings.filter(
       (b) => b.checkIn <= monthEndKey && b.checkOut > monthStartKey
     )
@@ -55,7 +55,7 @@ export function useStats(
       0
     )
 
-    // ── Avg occupancy ────────────────────────────────────────────────────
+    // ── Avg occupancy
     const grid = buildCalendarGrid(year, month)
     const monthDates = grid.flat().filter((d) => d.getMonth() === month)
     const totalOccupied = monthDates.reduce((sum, date) => {
